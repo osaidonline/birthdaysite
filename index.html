@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
 <meta name="theme-color" content="#0a0506">
-<title>Birthday Website</title>
+<title>For Fatima</title>
 
 <!-- Bootstrap -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
@@ -1202,6 +1202,7 @@
       sequence.push(Math.floor(Math.random()*10));
     }
     sequence.push(targetNum);
+    // overshoot digit: one past the target (wraps 9->0), gives the strip somewhere to spring from
     sequence.push((targetNum + 1) % 10);
 
     strip.innerHTML = '';
@@ -1211,19 +1212,26 @@
       strip.appendChild(span);
     });
 
-    const cellHeight = strip.parentElement.getBoundingClientRect().height;
-    const targetIndex = sequence.length - 2;   
-    const overshootIndex = sequence.length - 1; 
+    const totalItems = sequence.length;
+    const targetIndex = sequence.length - 2;   // index of the real target digit
+    const overshootIndex = sequence.length - 1; // index of the extra overshoot digit
     const rollDuration = 1000;
     const settleDuration = 380;
 
+    // Calculate percentage to translate the strip relative to its OWN total height.
+    // This makes the animation perfectly immune to screen resizing and CSS scale transitions!
+    const overshootPct = (overshootIndex / totalItems) * 100;
+    const targetPct = (targetIndex / totalItems) * 100;
+
     setTimeout(()=>{
+      // Phase 1: fast fluid roll PAST the target into the overshoot digit
       strip.style.transition = `transform ${rollDuration}ms var(--spring-snappy)`;
-      strip.style.transform = `translateY(-${overshootIndex*cellHeight}px)`;
+      strip.style.transform = `translateY(-${overshootPct}%)`;
 
       setTimeout(()=>{
+        // Phase 2: spring back up to the real target — the bounce-settle
         strip.style.transition = `transform ${settleDuration}ms var(--spring-bouncy)`;
-        strip.style.transform = `translateY(-${targetIndex*cellHeight}px)`;
+        strip.style.transform = `translateY(-${targetPct}%)`;
 
         const cell = strip.parentElement;
         cell.classList.add('landed');
